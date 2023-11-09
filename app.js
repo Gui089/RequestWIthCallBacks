@@ -1,32 +1,33 @@
-const getTodos = callback => {
+const getTodos = url => new Promise((resolve, reject) => {
+
     const request = new XMLHttpRequest();
 
-request.addEventListener('readystatechange', () => {
-    const isRequestOk = request.readyState === 4 && request.status === 200;
-    const isRequestNotOk = request.readyState === 4;
+    request.addEventListener('readystatechange', () => {
+        const isRequestOk = request.readyState === 4 && request.status === 200;
+        const isRequestNotOk = request.readyState === 4;
 
     if(isRequestOk) {
-        callback(null, request.responseText);
-        return;
+        const data = JSON.parse(request.responseText);
+        resolve(data);
     }
 
     if(isRequestNotOk) {
-        callback('Nao foi possivel obter os dados', null);
+        reject('Nao foi possivel obter os dados');
     }
+  });
+
+  request.open('GET', url);
+  request.send();
 });
 
-request.open('GET', 'https://jsonplaceholder.typicode.com/todos');
-request.send();
-
-}
-
-getTodos((error, data) => {
-    console.log('Callback excecutado');
-    
-    if(error) {
-        console.log(error);
-        return
-    }
-
-    console.log(data);
-});
+getTodos('https://pokeapi.co/api/v2/pokemon/ditto')
+    .then(pokemon => {
+        console.log(`Dados do pokemon: ${pokemon.name}`);
+        return getTodos('https://pokeapi.co/api/v2/pokemon/4');
+    })
+    .then(chamander => {
+        console.log(chamander);
+        return getTodos('https://pokeapi.co/api/v2/pokemon/7');
+    })
+    .then(squirtle => console.log(squirtle))
+    .catch(error => console.log(error));
